@@ -37,3 +37,4 @@ lerna-debug.log*
 .env
 # Sentry Config File
 .sentryclirc
+fetchApplicant.ts

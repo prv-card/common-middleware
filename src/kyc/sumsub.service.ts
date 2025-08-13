@@ -255,6 +255,7 @@ export class SumSubService {
     const response = await this.http.axiosRef.get(url, {
       headers,
     });
+    const phone = response.data['phone'];
     const data = response.data['fixedInfo'];
 
     const address = response.data['fixedInfo']['addresses'][0];
@@ -283,7 +284,7 @@ export class SumSubService {
           value: data['gender'] === 'M' ? 'Male' : 'Female',
         },
         'Mobile Number': {
-          value: data['phone'],
+          value: phone,
         },
         Nationality: {
           value: data['country'],
@@ -300,7 +301,7 @@ export class SumSubService {
           value: passportData['validUntil'],
         },
         'Passport Issue Date': {
-          value: '',
+          value: passportData['issuedDate'],
         },
       },
       residentialAddress: {
