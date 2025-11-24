@@ -124,22 +124,37 @@ export class KycService {
   }
 
   async invokeWhitelabel(whitelabelId: string, payload: any) {
-    try {
-      const whitelabelConfig = this.whitelabelConfig[whitelabelId];
-      if (!whitelabelConfig) {
-        return;
+    const whitelabelConfig = this.whitelabelConfig[whitelabelId];
+    if (!whitelabelConfig) {
+      return;
+    }
+    const url = `${whitelabelConfig.backendUri}/middlewarehooks/kyc`;
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...this.createApiConfigSignature(JSON.stringify(payload)),
+    };
+
+    const maxRetries = 2;
+    const delay = 10000; // 10 seconds
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        await this.http.axiosRef.post(url, payload, {
+          headers,
+        });
+        return; // Success, exit
+      } catch (err) {
+        if (attempt < maxRetries) {
+          // Wait before retrying
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          console.error(
+            `Failed to invoke whitelabel webhook after ${maxRetries + 1} attempts`,
+            err,
+          );
+        }
       }
-      const url = `${whitelabelConfig.backendUri}/middlewarehooks/kyc`;
-      const headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        ...this.createApiConfigSignature(JSON.stringify(payload)),
-      };
-      await this.http.axiosRef.post(url, payload, {
-        headers,
-      });
-    } catch (err) {
-      // console.error('Err', err);
     }
   }
 }
